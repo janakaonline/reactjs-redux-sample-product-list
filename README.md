@@ -1,6 +1,6 @@
 This is a sample project to dismostrate how to work with React JS and Redux
 
-[Checkout the demo](https://keen-beaver-2cc57e.netlify.com/)
+[Checkout the demo](https://keen-beaver-2cc57e.netlify.com/){:target="_blank"}
 
 ## Available Scripts
 
