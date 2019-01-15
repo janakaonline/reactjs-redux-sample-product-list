@@ -1,32 +1,22 @@
-.App {
-  text-align: center;
+.product-link,.product-link:hover, .product-link:active, .product-link:visited{
+    text-decoration: none;
+    color: #333333;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
+.product-item .card-text{
+    height: 48px;
+    overflow: hidden;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.product-item .created-at{
+    font-size: 65%;
+    font-weight: 400;
 }
 
-.App-link {
-  color: #61dafb;
+.product-item .price-tag{
+
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.product-item hr{
+    margin-top: 0.3rem;
 }
