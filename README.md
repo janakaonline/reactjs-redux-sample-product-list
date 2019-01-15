@@ -1,5 +1,7 @@
 This is a sample project to dismostrate how to work with React JS and Redux
 
+[Checkout the demo](https://keen-beaver-2cc57e.netlify.com/)
+
 ## Available Scripts
 
 In the project directory, you can run:
