@@ -7,7 +7,7 @@ class Product extends Component {
 
     confirmRemove = () => {
         if (window.confirm("Do you want to remove this product?")) {
-            this.props.removeProduct(this.props.index)
+            this.props.removeProduct(this.props.id)
         }
     };
 

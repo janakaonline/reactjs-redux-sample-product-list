@@ -1,0 +1,1 @@
+export const TOGGLE_STORAGE = 'product/TOGGLE_STORAGE';

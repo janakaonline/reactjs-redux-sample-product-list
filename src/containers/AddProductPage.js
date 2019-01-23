@@ -1,11 +1,11 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import * as ProductActionCreators from '../actions/product';
+import {addProduct, saveProductToLocal} from '../actions/product';
 import DatePicker from 'react-datepicker';
 import {formatPrice} from "../utils/string-formatters";
-
 import "react-datepicker/dist/react-datepicker.css";
+import moment from 'moment';
 
 
 class AddProductPage extends Component {
@@ -19,16 +19,29 @@ class AddProductPage extends Component {
 
 
     addNewProduct = () => {
-        this.props.actions.addProduct(
+        this.props.addProductAction(
             this.state.name,
             this.state.description,
             this.state.price,
-            this.state.creationDate.toLocaleDateString('si-LK')
+            moment(this.state.creationDate).format('YYYY-MM-DD HH:mm:ss')
         );
 
         this.props.history.push("/");
     };
 
+    saveToLocal = (e) => {
+        e.preventDefault();
+        this.props.saveProductToLocal(
+            null,
+            this.state.name,
+            this.state.description,
+            this.state.price,
+            moment(this.state.creationDate).format('YYYY-MM-DD HH:mm:ss')
+        );
+
+        alert('Product is added to your local storage.');
+        this.props.history.push("/");
+    };
 
     handleInputChange = (event) => {
         const target = event.target;
@@ -103,7 +116,12 @@ class AddProductPage extends Component {
                     <button className="btn btn-secondary" type="button"
                             onClick={this.goBack}>{this.props.history.length > 2 ? 'Go back' : 'Go to Product List'}</button>
 
-                    <button className="btn btn-primary float-right" type="submit">Add</button>
+                    <div className="float-right">
+                        <button className="btn btn-outline-primary mr-2 " type="button" onClick={this.saveToLocal}>Save to
+                            Local
+                        </button>
+                        <button className="btn btn-primary float-right" type="submit">Add</button>
+                    </div>
                 </div>
             </form>
         )
@@ -113,7 +131,8 @@ class AddProductPage extends Component {
 // map actions to props
 const mapDispatchToProps = (dispatch) => {
     return {
-        actions: bindActionCreators(ProductActionCreators, dispatch)
+        addProductAction: (name, description, price, createdAt) => dispatch(addProduct(name, description, price, createdAt)),
+        saveProductToLocal: (id, name, description, price, createdAt) => dispatch(saveProductToLocal(id, name, description, price, createdAt))
     };
 };
 

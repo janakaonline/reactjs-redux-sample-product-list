@@ -7,35 +7,38 @@ import * as serviceWorker from './serviceWorker';
 
 //redux
 import {Provider} from 'react-redux';
-import {createStore} from 'redux';
-import ProductReducer from './reducers/product';
+import {createStore, applyMiddleware, compose} from 'redux';
+import RootReducer from './reducers/root';
+import thunk from 'redux-thunk';
+
+//firebase
+import {reduxFirestore, getFirestore} from 'redux-firestore';
+import {reactReduxFirebase, getFirebase} from 'react-redux-firebase';
+import firebaseConfig from './config/firebaseConfig';
 
 
 //load state from localStorage
-const storedState = localStorage.getItem('productListReduxStorage')
-    ? JSON.parse(localStorage.getItem('productListReduxStorage'))
-    : [
-        {
-            id: 1,
-            price: 100,
-            name: 'Magical keyboard',
-            description: 'What a wonderful keyboard for your PC',
-            creation_date: '2019-1-2'
-        },
-        {
-            id: 2,
-            price: 99.99,
-            name: 'Rainbow unicorn',
-            description: 'Pet you would wonder why you bought it  at the first place',
-            creation_date: '2019-1-12'
-        }
-    ];
+const storedState = {
+    product: localStorage.getItem('productListReduxStorage')
+        ? JSON.parse(localStorage.getItem('productListReduxStorage'))
+        : [],
+    storage: localStorage.getItem('productListStorageData')
+        ? JSON.parse(localStorage.getItem('productListStorageData'))
+        : {storageType: 'firebase'},
+};
 
-const store = createStore(ProductReducer, storedState);
+let middleware = compose(
+    applyMiddleware(thunk.withExtraArgument({getFirebase, getFirestore})),
+    reduxFirestore(firebaseConfig),
+    reactReduxFirebase(firebaseConfig)
+);
+
+const store = createStore(RootReducer, storedState, middleware);
 
 //setup localStorage for redux
 store.subscribe(() => {
-    window.localStorage.setItem('productListReduxStorage', JSON.stringify(store.getState()))
+    window.localStorage.setItem('productListStorageData',  JSON.stringify(store.getState().storage));
+    window.localStorage.setItem('productListReduxStorage', JSON.stringify(store.getState().product));
 });
 
 

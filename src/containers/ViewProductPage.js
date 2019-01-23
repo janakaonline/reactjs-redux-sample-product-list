@@ -1,16 +1,26 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
-import {formatNL2BR, formatPrice, stringToDate} from "../utils/string-formatters";
+import {capilatizeFirstLetter, formatNL2BR, formatPrice, stringToDate} from "../utils/string-formatters";
+import {Link} from 'react-router-dom';
+import {compose} from "redux";
+import {firestoreConnect} from "react-redux-firebase";
 
 
 class ViewProductPage extends Component {
 
     state = {
-        id: null,
-        name: '',
-        description: '',
-        price: 0,
-        creationDate: ''
+        versionType: this.props.storageType,
+        pageNotFound: false,
+        loading: true,
+        product: {
+            id: null,
+            name: '',
+            description: '',
+            price: 0,
+            creationDate: new Date()
+        },
+        productLocal: null,
+        productFirebase: null,
     };
 
 
@@ -22,57 +32,149 @@ class ViewProductPage extends Component {
         }
     };
 
-    componentDidMount() {
+    componentWillMount() {
+        const id = this.props.match.params.id;
 
-        const product = this.props.products.find(product => product.id === parseInt(this.props.match.params.id));
+        this.setState((oldState) => {
+            return (
+                {
+                    ...oldState,
+                    productLocal: this.props.localProduct
+                }
+            )
+        });
 
-        this.setState({
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            creationDate: product.creation_date
+        this.props.firestore.collection('products').doc(id).get().then(product => {
+            if (product.exists) {
+                this.setState((oldState) => {
+                    return (
+                        {
+                            ...oldState,
+                            productFirebase: {
+                                ...product.data(),
+                                id
+                            },
+
+                        }
+                    )
+                });
+
+            }
+
+            const productToShow = this.state.versionType === 'firebase' ? this.state.productFirebase : this.state.productLocal;
+
+            this.setState((oldState) => {
+                return (
+                    {
+                        ...oldState,
+                        product: productToShow,
+                        loading: false,
+                        pageNotFound: !productToShow
+                    }
+                )
+            });
         });
     }
 
+    toggleVersion = (e) => {
+        e.preventDefault();
+        this.setState((oldState) => {
+           return(
+               {
+                   ...oldState,
+                   product: this.state.versionType === "firebase" ? oldState.productLocal : oldState.productFirebase,
+                   versionType: this.state.versionType === "firebase" ? "local" : "firebase"
+               }
+           )
+        });
+    };
+
     render() {
 
-        const {
-            id,
-            name,
-            description,
-            price,
-            creationDate,
-        } = this.state;
 
-        return (
-            <div className="card product-item">
-                <h3 className="card-header">{name} <span className="small">(#{id})</span></h3>
+        console.log(this.state.productLocal, this.state.productFirebase);
+        if (this.state.loading) {
+            return (
+                <div className="alert alert-info">Loading... Please wait.</div>
+            )
+        } else if (this.state.pageNotFound) {
+            return (
+                <div>
+                    <div className="alert alert-danger">
+                        <div>
+                            Sorry! we cannot find a product with the ID of ({this.props.match.params.id})
+                            in {capilatizeFirstLetter(this.props.storageType)} storage
+                        </div>
 
-                <div className="card-body">
-                    <p dangerouslySetInnerHTML={{__html: formatNL2BR(description)}}/>
-
-                    <div className="price-tag mb-2">
-                        <span>Price:</span> <span className="price">${formatPrice(price)}</span>
+                        <Link to="/" className="btn btn-link">Back to Product list</Link>
                     </div>
 
-                    <div className="created-at mb-3">Created on : {stringToDate(creationDate).toLocaleDateString()}</div>
-
-                    <button className="btn btn-secondary" type="button"
-                            onClick={this.goBack}>{this.props.history.length > 2 ? 'Go back' : 'Go to Product List'}</button>
                 </div>
+            )
+        } else {
+
+            const {
+                id,
+                name,
+                description,
+                price,
+                creationDate,
+            } = this.state.product;
+
+            let versionBtn = null;
+
+            if(this.state.productLocal && this.state.productFirebase){
+                const versionBtnText = this.state.versionType === "firebase" ? "local" : "firebase";
+                versionBtn = <button type="button" className="float-right btn btn-sm btn-outline-info"
+                    onClick={this.toggleVersion}>
+                    View {versionBtnText} version
+                    </button>;
+            }
+
+            return (
+                <div className="card product-item">
+                    <h3 className="card-header">
+                        <div>{name} <span className="small">(#{id})</span> {versionBtn}</div>
 
 
-            </div>
-        )
+                    </h3>
+
+                    <div className="card-body">
+                        <p dangerouslySetInnerHTML={{__html: formatNL2BR(description)}}/>
+
+                        <div className="price-tag mb-2">
+                            <span>Price:</span> <span className="price">${formatPrice(price)}</span>
+                        </div>
+
+                        <div className="created-at mb-3">Created on
+                            : {stringToDate(creationDate).toLocaleDateString()}</div>
+
+                        <button className="btn btn-secondary" type="button"
+                                onClick={this.goBack}>{this.props.history.length > 2 ? 'Go back' : 'Go to Product List'}</button>
+                    </div>
+
+
+                </div>
+            )
+        }
     }
 }
 
 //map states to props
-const mapStateToProps = state => {
+const mapStateToProps = (state, thisProps) => {
+    const productId = thisProps.match.params.id;
     return ({
-        products: state
+        storageType: state.storage.storageType,
+        localProduct: state.product.find(product => {
+            return product.id === productId;
+        })
     })
 };
-
-export default connect(mapStateToProps)(ViewProductPage);
+export default compose(
+    connect(mapStateToProps),
+    firestoreConnect([
+        {
+            collection: 'products'
+        }
+    ])
+)(ViewProductPage);
