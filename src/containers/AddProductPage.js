@@ -3,10 +3,11 @@ import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 import {addProduct, saveProductToLocal} from '../actions/product';
 import DatePicker from 'react-datepicker';
-import {formatPrice} from "../utils/string-formatters";
+import {dateToString, formatPrice} from "../utils/string-formatters";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
-
+import { firebaseConnect } from 'react-redux-firebase'
+import {compose} from "redux";
 
 class AddProductPage extends Component {
 
@@ -18,15 +19,21 @@ class AddProductPage extends Component {
     };
 
 
-    addNewProduct = () => {
+    addNewProduct = (e) => {
+        e.preventDefault();
         this.props.addProductAction(
             this.state.name,
             this.state.description,
             this.state.price,
             moment(this.state.creationDate).format('YYYY-MM-DD HH:mm:ss')
         );
+        /*this.props.firebase.push('products', {
+            ...this.state,
+            creationDate: moment(this.state.creationDate).format('YYYY-MM-DD HH:mm:ss'),
+            lastUpdated: dateToString()
+        });*/
 
-        this.props.history.push("/");
+        //this.props.history.push("/");
     };
 
     saveToLocal = (e) => {
@@ -36,7 +43,7 @@ class AddProductPage extends Component {
             this.state.name,
             this.state.description,
             this.state.price,
-            moment(this.state.creationDate).format('YYYY-MM-DD HH:mm:ss')
+            moment(this.state.creationDate).format('YYYY-MM-DD HH:mm:ss'),
         );
 
         alert('Product is added to your local storage.');
@@ -136,5 +143,8 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-
-export default connect(null, mapDispatchToProps)(AddProductPage);
+export default compose(
+    connect(null, mapDispatchToProps),
+    firebaseConnect()
+)(AddProductPage);
+//export default connect(null, mapDispatchToProps)(AddProductPage);

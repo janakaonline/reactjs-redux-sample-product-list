@@ -59,14 +59,15 @@ export default function Product(state = initState, action) {
             }
         }
         case ProductActionTypes.REMOVE_PRODUCT:
-            return [
-                ...state.slice(0, action.index),
-                ...state.slice(action.index + 1)
-            ];
+            return state;
 
         case ProductActionTypes.REMOVE_PRODUCT_FROM_LOCAL: {
 
-            const existingProduct = state.find(obj => {
+            return state.filter((product) => {
+                return product.id !== action.id;
+            });
+
+            /*const existingProduct = state.find(obj => {
                 return obj.id === action.id;
             });
 
@@ -77,9 +78,7 @@ export default function Product(state = initState, action) {
                     ...state.slice(0, productIndex),
                     ...state.slice(productIndex + 1)
                 ];
-            }
-
-            return state;
+            }*/
         }
 
         case ProductActionTypes.UPDATE_PRODUCT:

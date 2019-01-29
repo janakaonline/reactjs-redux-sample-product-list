@@ -29,9 +29,10 @@ class EditProductPage extends Component {
     componentWillMount() {
         const id = this.props.match.params.id;
 
-        console.log(this.props);
+        //console.log(this.props);
 
         if (this.props.storageType === 'firebase') {
+            //console.log(this.props)
             this.props.firestore.collection('products').doc(id).get().then(product => {
                 if (product.exists) {
                     this.setState({
@@ -265,9 +266,5 @@ const mapDispatchToProps = (dispatch) => {
 
 export default compose(
     connect(mapStateToProps, mapDispatchToProps),
-    firestoreConnect([
-        {
-            collection: 'products'
-        }
-    ])
+    firestoreConnect()
 )(EditProductPage);
